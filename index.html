@@ -1,0 +1,671 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Retirement Planning Calculator – FinCal Innovation Hackathon</title>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --blue: #224c87;
+    --blue-light: #2d63b0;
+    --blue-dark: #1a3a68;
+    --red: #da3832;
+    --grey: #919090;
+    --grey-light: #e8e8e8;
+    --white: #ffffff;
+    --bg: #f4f6fb;
+    --card: #ffffff;
+    --text: #1a1a2e;
+    --text-muted: #666;
+    --border: #dce3f0;
+    --shadow: 0 4px 24px rgba(34,76,135,0.10);
+    --shadow-lg: 0 8px 40px rgba(34,76,135,0.16);
+    --radius: 16px;
+    --radius-sm: 8px;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Montserrat', Arial, Verdana, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    line-height: 1.6;
+  }
+
+  header {
+    background: var(--blue);
+    color: white;
+    padding: 0;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-shadow: 0 2px 16px rgba(34,76,135,0.18);
+  }
+  .header-inner {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 16px 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+  }
+  .header-brand { display: flex; align-items: center; gap: 12px; }
+  .brand-badge {
+    background: var(--red);
+    color: white;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    padding: 3px 8px;
+    border-radius: 4px;
+    text-transform: uppercase;
+  }
+  .brand-title { font-size: 15px; font-weight: 700; letter-spacing: 0.5px; }
+  .brand-sub { font-size: 11px; opacity: 0.7; font-weight: 400; }
+
+  .hero {
+    background: linear-gradient(135deg, var(--blue-dark) 0%, var(--blue) 60%, var(--blue-light) 100%);
+    color: white;
+    padding: 48px 24px 56px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  .hero::before {
+    content: '';
+    position: absolute;
+    top: -60px; right: -60px;
+    width: 300px; height: 300px;
+    background: rgba(255,255,255,0.04);
+    border-radius: 50%;
+  }
+  .hero::after {
+    content: '';
+    position: absolute;
+    bottom: -80px; left: -40px;
+    width: 240px; height: 240px;
+    background: rgba(218,56,50,0.08);
+    border-radius: 50%;
+  }
+  .hero-inner { max-width: 700px; margin: 0 auto; position: relative; z-index: 1; }
+  .hero-eyebrow {
+    font-size: 11px; font-weight: 600; letter-spacing: 2px;
+    text-transform: uppercase; opacity: 0.7; margin-bottom: 12px;
+  }
+  .hero h1 {
+    font-size: clamp(26px, 5vw, 40px);
+    font-weight: 800; line-height: 1.15; margin-bottom: 12px;
+  }
+  .hero h1 span { color: #f4b942; }
+  .hero p { font-size: 15px; opacity: 0.85; font-weight: 400; max-width: 500px; margin: 0 auto; }
+  .hero-steps {
+    display: flex; justify-content: center;
+    gap: 8px; margin-top: 28px; flex-wrap: wrap;
+  }
+  .step-pill {
+    background: rgba(255,255,255,0.12);
+    border: 1px solid rgba(255,255,255,0.2);
+    border-radius: 20px; padding: 6px 14px;
+    font-size: 12px; font-weight: 600;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .step-pill .num {
+    background: var(--red); color: white;
+    width: 18px; height: 18px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 10px; font-weight: 700;
+  }
+
+  .main { max-width: 1200px; margin: 0 auto; padding: 36px 24px 60px; }
+
+  .tabs {
+    display: flex; background: var(--card);
+    border-radius: var(--radius); padding: 6px;
+    box-shadow: var(--shadow); margin-bottom: 28px; overflow-x: auto;
+  }
+  .tab-btn {
+    flex: 1; min-width: 120px; padding: 10px 16px;
+    border: none; background: transparent; color: var(--text-muted);
+    font-family: 'Montserrat', sans-serif; font-size: 13px; font-weight: 600;
+    cursor: pointer; border-radius: var(--radius-sm);
+    transition: all 0.2s; white-space: nowrap;
+  }
+  .tab-btn.active {
+    background: var(--blue); color: white;
+    box-shadow: 0 2px 10px rgba(34,76,135,0.25);
+  }
+  .tab-btn:hover:not(.active) { background: var(--bg); color: var(--blue); }
+
+  .calc-grid {
+    display: grid; grid-template-columns: 1fr 1fr;
+    gap: 24px; align-items: start;
+  }
+  @media (max-width: 900px) { .calc-grid { grid-template-columns: 1fr; } }
+
+  .card {
+    background: var(--card); border-radius: var(--radius);
+    padding: 28px; box-shadow: var(--shadow); border: 1px solid var(--border);
+  }
+  .card-title {
+    font-size: 14px; font-weight: 700; color: var(--blue);
+    text-transform: uppercase; letter-spacing: 1px;
+    margin-bottom: 20px; display: flex; align-items: center; gap: 8px;
+  }
+  .card-title::before {
+    content: ''; width: 4px; height: 18px;
+    background: var(--red); border-radius: 2px; flex-shrink: 0;
+  }
+
+  .form-group { margin-bottom: 20px; }
+  .form-label {
+    display: flex; justify-content: space-between;
+    align-items: center; margin-bottom: 8px;
+    font-size: 13px; font-weight: 600; color: var(--text);
+  }
+  .form-label .hint { font-size: 11px; font-weight: 400; color: var(--grey); }
+  .input-row { display: flex; align-items: center; gap: 10px; }
+  input[type="range"] {
+    flex: 1; height: 5px; border-radius: 3px;
+    background: var(--grey-light); outline: none;
+    cursor: pointer; -webkit-appearance: none; accent-color: var(--blue);
+  }
+  input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none; width: 18px; height: 18px;
+    border-radius: 50%; background: var(--blue); cursor: pointer;
+    box-shadow: 0 2px 6px rgba(34,76,135,0.3); border: 2px solid white;
+  }
+  .num-input {
+    width: 90px; padding: 7px 10px;
+    border: 2px solid var(--border); border-radius: var(--radius-sm);
+    font-family: 'Montserrat', sans-serif; font-size: 13px;
+    font-weight: 600; color: var(--text); background: var(--bg);
+    text-align: right; transition: border-color 0.2s;
+  }
+  .num-input:focus { outline: none; border-color: var(--blue); background: white; }
+  .num-input:invalid { border-color: var(--red); }
+
+  .section-divider {
+    font-size: 11px; font-weight: 700; color: var(--grey);
+    text-transform: uppercase; letter-spacing: 1.5px;
+    margin: 24px 0 16px; padding-bottom: 8px; border-bottom: 1px solid var(--border);
+  }
+
+  .results-card {
+    background: var(--blue); color: white;
+    border-radius: var(--radius); padding: 28px; box-shadow: var(--shadow-lg);
+  }
+  .results-title {
+    font-size: 14px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 1px; opacity: 0.8; margin-bottom: 20px;
+  }
+  .result-primary {
+    background: rgba(255,255,255,0.1); border-radius: var(--radius-sm);
+    padding: 18px; margin-bottom: 12px; border: 1px solid rgba(255,255,255,0.15);
+  }
+  .result-label {
+    font-size: 11px; font-weight: 600; opacity: 0.7;
+    text-transform: uppercase; letter-spacing: 1px; margin-bottom: 4px;
+  }
+  .result-value { font-size: clamp(22px, 4vw, 32px); font-weight: 800; line-height: 1; }
+  .result-sub { font-size: 12px; opacity: 0.65; margin-top: 4px; }
+  .results-grid {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px;
+  }
+  .result-mini {
+    background: rgba(255,255,255,0.08); border-radius: var(--radius-sm);
+    padding: 12px; border: 1px solid rgba(255,255,255,0.1);
+  }
+  .result-mini .result-label { font-size: 10px; }
+  .result-mini .result-value { font-size: 16px; font-weight: 700; }
+
+  .chart-wrap {
+    margin-top: 20px; background: rgba(255,255,255,0.06);
+    border-radius: var(--radius-sm); padding: 16px;
+  }
+  .chart-title {
+    font-size: 11px; opacity: 0.7; font-weight: 600;
+    margin-bottom: 12px; text-transform: uppercase; letter-spacing: 1px;
+  }
+  .bar-chart { display: flex; flex-direction: column; gap: 8px; }
+  .bar-row { display: flex; align-items: center; gap: 10px; }
+  .bar-label { font-size: 11px; font-weight: 600; opacity: 0.8; width: 120px; flex-shrink: 0; }
+  .bar-track {
+    flex: 1; background: rgba(255,255,255,0.1);
+    border-radius: 4px; height: 22px; overflow: hidden;
+  }
+  .bar-fill {
+    height: 100%; border-radius: 4px; display: flex;
+    align-items: center; padding-left: 8px;
+    font-size: 10px; font-weight: 700; white-space: nowrap;
+    transition: width 0.6s cubic-bezier(0.4,0,0.2,1);
+  }
+  .bar-invested { background: rgba(255,255,255,0.35); }
+  .bar-corpus { background: #f4b942; color: #1a1a2e; }
+
+  .assumption-note {
+    background: #fff8e1; border-left: 4px solid #f4b942;
+    border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+    padding: 12px 14px; font-size: 12px; color: #5a4a00; margin-top: 16px;
+  }
+  .assumption-note strong {
+    display: block; margin-bottom: 4px;
+    font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px;
+  }
+
+  .table-wrap { overflow-x: auto; border-radius: var(--radius-sm); border: 1px solid var(--border); }
+  table { width: 100%; border-collapse: collapse; font-size: 12px; }
+  thead { background: var(--blue); color: white; }
+  th {
+    padding: 10px 14px; text-align: right; font-weight: 600;
+    font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; white-space: nowrap;
+  }
+  th:first-child { text-align: left; }
+  td { padding: 9px 14px; text-align: right; border-bottom: 1px solid var(--border); color: var(--text); }
+  td:first-child { text-align: left; font-weight: 600; color: var(--blue); }
+  tr:last-child td { border-bottom: none; }
+  tr:nth-child(even) td { background: #f9fafd; }
+  .retire-row td { background: #fff3e0 !important; font-weight: 700; }
+  .retire-row td:first-child { color: var(--red); }
+
+  .disclaimer {
+    background: white; border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 16px 20px;
+    margin-top: 28px; font-size: 11px; color: var(--grey); line-height: 1.7;
+  }
+  .disclaimer strong { color: var(--text); }
+
+  .wcag-badge {
+    display: inline-flex; align-items: center; gap: 6px;
+    font-size: 10px; font-weight: 700; color: var(--grey);
+    border: 1px solid var(--border); padding: 4px 10px;
+    border-radius: 20px; margin-left: auto;
+    text-transform: uppercase; letter-spacing: 0.5px;
+  }
+  .wcag-dot { width: 6px; height: 6px; border-radius: 50%; background: #4caf50; }
+
+  @media (max-width: 600px) {
+    .header-inner { flex-direction: column; align-items: flex-start; }
+    .main { padding: 20px 14px 48px; }
+    .card { padding: 20px 16px; }
+    .results-card { padding: 20px 16px; }
+    .results-grid { grid-template-columns: 1fr; }
+    .bar-label { width: 90px; font-size: 10px; }
+    .hero { padding: 32px 16px 40px; }
+  }
+
+  :focus-visible { outline: 3px solid var(--red); outline-offset: 2px; border-radius: 4px; }
+
+  .skip-link {
+    position: absolute; top: -40px; left: 0;
+    background: var(--blue); color: white;
+    padding: 8px 16px; text-decoration: none;
+    font-size: 13px; font-weight: 600; z-index: 1000; transition: top 0.2s;
+  }
+  .skip-link:focus { top: 0; }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(16px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .card, .results-card { animation: fadeUp 0.4s ease both; }
+  .card:nth-child(2) { animation-delay: 0.08s; }
+
+  .tab-content { display: none; }
+  .tab-content.active { display: block; }
+</style>
+</head>
+<body>
+
+<a href="#main-content" class="skip-link">Skip to main content</a>
+
+<header role="banner">
+  <div class="header-inner">
+    <div class="header-brand">
+      <div class="brand-badge" aria-label="Technex 26">TECHNEX'26</div>
+      <div>
+        <div class="brand-title">FinCal Innovation Hackathon</div>
+        <div class="brand-sub">Co-sponsored by HDFC Mutual Fund</div>
+      </div>
+    </div>
+    <div class="wcag-badge" aria-label="WCAG 2.1 AA Compliant">
+      <span class="wcag-dot" aria-hidden="true"></span>
+      WCAG 2.1 AA
+    </div>
+  </div>
+</header>
+
+<section class="hero" aria-label="Calculator introduction">
+  <div class="hero-inner">
+    <p class="hero-eyebrow">Investor Education & Awareness</p>
+    <h1>Plan Your <span>Retirement</span><br>with Clarity</h1>
+    <p>An interactive, illustrative tool to estimate the corpus you may need and how much to invest monthly — based on your life today.</p>
+    <div class="hero-steps" role="list" aria-label="Calculation steps">
+      <div class="step-pill" role="listitem"><span class="num" aria-hidden="true">1</span> Inflate Expenses</div>
+      <div class="step-pill" role="listitem"><span class="num" aria-hidden="true">2</span> Estimate Corpus</div>
+      <div class="step-pill" role="listitem"><span class="num" aria-hidden="true">3</span> Calculate Monthly SIP</div>
+    </div>
+  </div>
+</section>
+
+<main id="main-content" class="main">
+
+  <div class="tabs" role="tablist" aria-label="Calculator sections">
+    <button class="tab-btn active" role="tab" aria-selected="true" aria-controls="tab-basic" id="btn-basic" onclick="switchTab('basic')">Core Calculator</button>
+    <button class="tab-btn" role="tab" aria-selected="false" aria-controls="tab-projection" id="btn-projection" onclick="switchTab('projection')">Year-wise Projection</button>
+  </div>
+
+  <!-- TAB: CORE -->
+  <div id="tab-basic" class="tab-content active" role="tabpanel" aria-labelledby="btn-basic">
+    <div class="calc-grid">
+
+      <div class="card" aria-label="Input parameters">
+        <div class="card-title">Your Details</div>
+
+        <div class="section-divider">Age & Timeline</div>
+
+        <div class="form-group">
+          <label class="form-label" for="currentAge">
+            Current Age <span class="hint" id="currentAge-hint">years</span>
+          </label>
+          <div class="input-row">
+            <input type="range" id="currentAge" min="18" max="60" value="25" step="1"
+              aria-describedby="currentAge-hint" oninput="syncInput('currentAge','currentAge_num'); calc()">
+            <input type="number" id="currentAge_num" class="num-input" min="18" max="60" value="25"
+              aria-label="Current age in years" oninput="syncRange('currentAge','currentAge_num'); calc()">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="retireAge">
+            Retirement Age <span class="hint" id="retireAge-hint">years</span>
+          </label>
+          <div class="input-row">
+            <input type="range" id="retireAge" min="40" max="75" value="60" step="1"
+              aria-describedby="retireAge-hint" oninput="syncInput('retireAge','retireAge_num'); calc()">
+            <input type="number" id="retireAge_num" class="num-input" min="40" max="75" value="60"
+              aria-label="Retirement age in years" oninput="syncRange('retireAge','retireAge_num'); calc()">
+          </div>
+        </div>
+
+        <div class="section-divider">Expenses</div>
+
+        <div class="form-group">
+          <label class="form-label" for="monthlyExp">
+            Current Monthly Expenses <span class="hint" id="monthlyExp-hint">₹</span>
+          </label>
+          <div class="input-row">
+            <input type="range" id="monthlyExp" min="5000" max="500000" value="50000" step="1000"
+              aria-describedby="monthlyExp-hint" oninput="syncInput('monthlyExp','monthlyExp_num'); calc()">
+            <input type="number" id="monthlyExp_num" class="num-input" min="5000" max="500000" value="50000"
+              aria-label="Current monthly expenses in rupees" oninput="syncRange('monthlyExp','monthlyExp_num'); calc()">
+          </div>
+        </div>
+
+        <div class="section-divider">Return & Inflation Assumptions <span style="font-size:10px;font-weight:400;color:var(--grey);text-transform:none;letter-spacing:0;">(editable)</span></div>
+
+        <div class="form-group">
+          <label class="form-label" for="inflation">
+            Inflation Rate <span class="hint" id="inflation-hint">% per year (assumption)</span>
+          </label>
+          <div class="input-row">
+            <input type="range" id="inflation" min="1" max="15" value="6" step="0.5"
+              aria-describedby="inflation-hint" oninput="syncInput('inflation','inflation_num'); calc()">
+            <input type="number" id="inflation_num" class="num-input" min="1" max="15" value="6" step="0.5"
+              aria-label="Assumed inflation rate" oninput="syncRange('inflation','inflation_num'); calc()">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="preReturn">
+            Pre-Retirement Return <span class="hint" id="preReturn-hint">% per year (assumption)</span>
+          </label>
+          <div class="input-row">
+            <input type="range" id="preReturn" min="1" max="20" value="12" step="0.5"
+              aria-describedby="preReturn-hint" oninput="syncInput('preReturn','preReturn_num'); calc()">
+            <input type="number" id="preReturn_num" class="num-input" min="1" max="20" value="12" step="0.5"
+              aria-label="Assumed pre-retirement return" oninput="syncRange('preReturn','preReturn_num'); calc()">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="postReturn">
+            Post-Retirement Return <span class="hint" id="postReturn-hint">% per year (assumption)</span>
+          </label>
+          <div class="input-row">
+            <input type="range" id="postReturn" min="1" max="15" value="7" step="0.5"
+              aria-describedby="postReturn-hint" oninput="syncInput('postReturn','postReturn_num'); calc()">
+            <input type="number" id="postReturn_num" class="num-input" min="1" max="15" value="7" step="0.5"
+              aria-label="Assumed post-retirement return" oninput="syncRange('postReturn','postReturn_num'); calc()">
+          </div>
+        </div>
+
+        <div class="assumption-note" role="note">
+          <strong>📌 All assumptions are editable</strong>
+          All rates above are illustrative assumptions. Actual market returns and inflation may vary significantly. These figures do not constitute a guarantee or prediction of future returns.
+        </div>
+      </div>
+
+      <div>
+        <div class="results-card" role="region" aria-label="Calculation results" aria-live="polite">
+          <div class="results-title">Your Retirement Estimate</div>
+
+          <div class="result-primary">
+            <div class="result-label">Estimated Retirement Corpus Required</div>
+            <div class="result-value" id="corpusResult">₹0</div>
+            <div class="result-sub" id="corpusSub">at retirement age –</div>
+          </div>
+
+          <div class="result-primary">
+            <div class="result-label">Required Monthly SIP to Start Now</div>
+            <div class="result-value" id="sipResult">₹0</div>
+            <div class="result-sub" id="sipSub">invested every month for – years</div>
+          </div>
+
+          <div class="results-grid">
+            <div class="result-mini">
+              <div class="result-label">Retirement Annual Expense</div>
+              <div class="result-value" id="annualExpResult">₹0</div>
+            </div>
+            <div class="result-mini">
+              <div class="result-label">Total Amount Invested</div>
+              <div class="result-value" id="totalInvestedResult">₹0</div>
+            </div>
+            <div class="result-mini">
+              <div class="result-label">Years to Retirement</div>
+              <div class="result-value" id="yearsToRetire">–</div>
+            </div>
+            <div class="result-mini">
+              <div class="result-label">Retirement Duration</div>
+              <div class="result-value" id="retireDuration">–</div>
+            </div>
+          </div>
+
+          <div class="chart-wrap" role="img" aria-label="Visual comparison of investment figures">
+            <div class="chart-title">Proportional View (Illustrative)</div>
+            <div class="bar-chart" aria-hidden="true">
+              <div class="bar-row">
+                <div class="bar-label">Total Invested</div>
+                <div class="bar-track">
+                  <div class="bar-fill bar-invested" id="barInvested" style="width:40%">—</div>
+                </div>
+              </div>
+              <div class="bar-row">
+                <div class="bar-label">Corpus Needed</div>
+                <div class="bar-track">
+                  <div class="bar-fill bar-corpus" id="barCorpus" style="width:80%">—</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div id="errorMsg" role="alert" aria-live="assertive"
+          style="display:none;background:#fff3f3;border:1px solid var(--red);border-radius:var(--radius-sm);padding:12px 16px;margin-top:12px;color:var(--red);font-size:13px;font-weight:600;"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB: PROJECTION -->
+  <div id="tab-projection" class="tab-content" role="tabpanel" aria-labelledby="btn-projection">
+    <div class="card">
+      <div class="card-title">Year-wise Projection</div>
+      <p style="font-size:13px;color:var(--text-muted);margin-bottom:16px;">Illustrative year-by-year snapshot of your investment accumulation phase. Figures are estimates based on your input assumptions and may not reflect actual market outcomes.</p>
+      <div class="table-wrap">
+        <table role="table" aria-label="Year-wise investment projection table">
+          <thead>
+            <tr>
+              <th scope="col">Age / Year</th>
+              <th scope="col">Annual SIP</th>
+              <th scope="col">Cumulative Invested</th>
+              <th scope="col">Est. Corpus Value</th>
+              <th scope="col">Growth</th>
+            </tr>
+          </thead>
+          <tbody id="projectionBody">
+            <tr><td colspan="5" style="text-align:center;padding:20px;color:var(--grey);">Calculate first to see projection</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <div class="disclaimer" role="contentinfo" aria-label="Important disclaimer">
+    <strong>Important Disclaimer:</strong> This tool has been designed for information purposes only. Actual results may vary depending on various factors involved in capital market. Investor should not consider above as a recommendation for any schemes of HDFC Mutual Fund. Past performance may or may not be sustained in future and is not a guarantee of any future returns. All figures shown are illustrative estimates only.
+  </div>
+
+  <div style="text-align:center;padding:20px 0 8px;font-size:12px;color:var(--grey);font-weight:500;letter-spacing:0.5px;">
+    Designed by <strong style="color:var(--blue)">Polaki Yashwant Kumar</strong>
+  </div>
+
+</main>
+
+<script>
+  function syncInput(rangeId, numId) {
+    document.getElementById(numId).value = document.getElementById(rangeId).value;
+  }
+  function syncRange(rangeId, numId) {
+    const val = document.getElementById(numId).value;
+    const range = document.getElementById(rangeId);
+    if (val >= range.min && val <= range.max) range.value = val;
+  }
+
+  function fmt(n) {
+    if (n >= 1e7) return '₹' + (n/1e7).toFixed(2) + ' Cr';
+    if (n >= 1e5) return '₹' + (n/1e5).toFixed(2) + ' L';
+    return '₹' + Math.round(n).toLocaleString('en-IN');
+  }
+  function fmtShort(n) {
+    if (n >= 1e7) return '₹' + (n/1e7).toFixed(1) + 'Cr';
+    if (n >= 1e5) return '₹' + (n/1e5).toFixed(1) + 'L';
+    return '₹' + Math.round(n).toLocaleString('en-IN');
+  }
+
+  function g(id) { return parseFloat(document.getElementById(id).value) || 0; }
+
+  function calc() {
+    const errEl = document.getElementById('errorMsg');
+    errEl.style.display = 'none';
+
+    const curAge     = g('currentAge');
+    const retAge     = g('retireAge');
+    const monthlyExp = g('monthlyExp');
+    const inflation  = g('inflation') / 100;
+    const preRet     = g('preReturn') / 100;
+    const postRet    = g('postReturn') / 100;
+
+    if (retAge <= curAge) {
+      errEl.textContent = 'Retirement age must be greater than current age.';
+      errEl.style.display = 'block'; return;
+    }
+
+    const yrs = retAge - curAge;
+    const retDuration = 25; // fixed 25-year post-retirement duration (illustrative)
+
+    // STEP 1: Inflate Annual Expenses
+    const retireAnnualExp = (monthlyExp * 12) * Math.pow(1 + inflation, yrs);
+
+    // STEP 2: Retirement Corpus (PV of Annuity)
+    const corpus = postRet === 0
+      ? retireAnnualExp * retDuration
+      : retireAnnualExp * ((1 - Math.pow(1 + postRet, -retDuration)) / postRet);
+
+    // STEP 3: Required Monthly SIP
+    const n = yrs * 12;
+    const r = preRet / 12;
+    const monthlySIP = r === 0
+      ? corpus / n
+      : corpus * r / ((Math.pow(1 + r, n) - 1) * (1 + r));
+
+    const totalInvested = monthlySIP * n;
+
+    document.getElementById('corpusResult').textContent = fmt(corpus);
+    document.getElementById('corpusSub').textContent = `at retirement age ${retAge} — illustrative estimate`;
+    document.getElementById('sipResult').textContent = fmt(monthlySIP);
+    document.getElementById('sipSub').textContent = `invested every month for ${yrs} years (${n} instalments) — illustrative`;
+    document.getElementById('annualExpResult').textContent = fmt(retireAnnualExp);
+    document.getElementById('totalInvestedResult').textContent = fmt(totalInvested);
+    document.getElementById('yearsToRetire').textContent = yrs + ' yrs';
+    document.getElementById('retireDuration').textContent = retDuration + ' yrs (assumed)';
+
+    const maxVal = Math.max(corpus, totalInvested, 1);
+    document.getElementById('barInvested').style.width = Math.max(10, (totalInvested / maxVal) * 95) + '%';
+    document.getElementById('barCorpus').style.width = Math.max(10, (corpus / maxVal) * 95) + '%';
+    document.getElementById('barInvested').textContent = fmtShort(totalInvested);
+    document.getElementById('barCorpus').textContent = fmtShort(corpus);
+
+    buildProjection(curAge, retAge, monthlySIP, r);
+  }
+
+  function buildProjection(curAge, retAge, sip, r) {
+    const tbody = document.getElementById('projectionBody');
+    let rows = '', corpus = 0, totalInvested = 0;
+    const step = Math.max(1, Math.floor((retAge - curAge) / 10));
+
+    for (let yr = 1; yr <= (retAge - curAge); yr++) {
+      for (let m = 0; m < 12; m++) {
+        corpus = (corpus + sip) * (1 + r);
+        totalInvested += sip;
+      }
+      const age = curAge + yr;
+      if (yr === 1 || yr % step === 0 || age === retAge) {
+        const growth = totalInvested > 0 ? ((corpus - totalInvested) / totalInvested * 100).toFixed(1) : '0.0';
+        const isRetire = age === retAge;
+        rows += `<tr class="${isRetire ? 'retire-row' : ''}">
+          <td>${age} yrs${isRetire ? ' 🎯 Retirement' : ''}</td>
+          <td>₹${Math.round(sip*12).toLocaleString('en-IN')}</td>
+          <td>₹${Math.round(totalInvested).toLocaleString('en-IN')}</td>
+          <td>₹${Math.round(corpus).toLocaleString('en-IN')}</td>
+          <td>${growth}%</td>
+        </tr>`;
+      }
+    }
+    tbody.innerHTML = rows || '<tr><td colspan="5" style="text-align:center;padding:20px;color:var(--grey);">Adjust inputs to see projection</td></tr>';
+  }
+
+  function switchTab(name) {
+    document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.tab-btn').forEach(b => { b.classList.remove('active'); b.setAttribute('aria-selected','false'); });
+    document.getElementById('tab-' + name).classList.add('active');
+    document.getElementById('btn-' + name).classList.add('active');
+    document.getElementById('btn-' + name).setAttribute('aria-selected','true');
+  }
+
+  document.querySelectorAll('.tab-btn').forEach((btn, idx, all) => {
+    btn.addEventListener('keydown', (e) => {
+      let next = idx;
+      if (e.key === 'ArrowRight') next = (idx + 1) % all.length;
+      else if (e.key === 'ArrowLeft') next = (idx - 1 + all.length) % all.length;
+      else return;
+      all[next].focus();
+      all[next].click();
+    });
+  });
+
+  calc();
+</script>
+</body>
+</html>
